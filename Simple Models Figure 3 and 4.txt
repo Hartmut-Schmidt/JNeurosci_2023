@@ -1,0 +1,614 @@
+Model of Cumulative Amplitude Histograms for Estimating Toxin Effects on Replenishment
+This file covers the models in Figure 3A-D; E-F or Figure 4 are similar, except for different concentrations or normalization, respectively.
+
+Parameters
+In[1]:= fibers=36; (*number of activated PFs*)
+n0=3.; (*initial release sites*)
+ne=3; (*extra release sites*)
+p=0.6; (*initial p; altered p is set in the individual sections*)
+q=8.*10^-12;
+imax=49;  (*iterator*)
+r=0.1; (*replenishment rate; altered r is set in the individual sections*)
+isi=50*10^-3;
+Control
+In[351]:= fibers=36; (*number of activated PFs*)
+n0=3.; (*initial release sites*)
+ne=3; (*extra release sites*)
+p=0.6; (*initial p; altered p is set in the individual sections*)
+q=8.*10^-12;
+imax=49;  (*iterator*)
+r=0.1; (*replenishment rate; altered r is set in the individual sections*)
+isi=50*10^-3;
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+r,{i,1,imax}
+]];
+
+rel=Table[
+n[i] p,{i,0,imax}
+];                                             (*quantal content, qc*)
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp1=ListPlot[rel,PlotRange->{0,2},PlotStyle->{Black,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs"];
+epn1=ListPlot[epsc/epsc[[1]],PlotRange->Full,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"norm. EPSCs"]
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnp=ListPlot[cn,PlotRange->All,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2=ListPlot[cn2,PlotRange->All,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cep=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lp=Plot[line,{x,0,49},PlotRange->All,PlotStyle->Black];
+lp2=Plot[line2,{x,0,49},PlotRange->All,PlotStyle->Black];
+lp3=Plot[line3,{x,0,49}];
+
+(*Print["pr = ", (First[line]-n[1])/First[line]]*) (*No idea about this?*)
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[ep];
+Show[epn1]
+Show[qcp1]
+Show[cep,lp3];
+Show[cnp,lp]
+Show[cnp2,lp2];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+(*Print["qcont1 = ",qcont1]
+Print["qcont2 = ",qcont2]*)
+
+
+Out[371]= 
+Out[379]= 2.93333 +0.1 x
+Out[380]= 1.62963 +0.0555556 x
+Out[381]= 2.34667*10^-11+8.*10^-13 x
+Out[391]= 
+Out[392]= 
+Out[394]= 
+During evaluation of In[351]:= Real pr = 0.6
+During evaluation of In[351]:= Real N = 3.
+During evaluation of In[351]:= pr EPSC1/y-inter= 0.613636
+During evaluation of In[351]:= pr Norm EPSC1/y-inter= 0.613636
+During evaluation of In[351]:= y-inter = 2.93333
+During evaluation of In[351]:= y-inter norm= 1.62963
+During evaluation of In[351]:= slope = 0.1 x
+During evaluation of In[351]:= slope norm= 0.0555556 x
+During evaluation of In[351]:= Last EPSC ampl= 8.*10^-13
+Control with temporary overfilling
+Recordings in elevated Ca to rise pr
+p=0.6; (*initial p; altered p is set in the individual sections*)
+r=0.1; (*replenishment rate; altered r is set in the individual sections*)
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+(ne-(i-1)) +r,{i,1,ne+1}
+],
+Table[
+n[i]=n[i-1] -p*n[i-1] +r,{i,ne+1,imax}
+]
+];
+
+
+rel=Table[
+n[i] p,{i,0,imax}
+];
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp1a=ListPlot[rel,PlotRange->{0,3},PlotStyle->{Black,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs"];
+epn1a=ListPlot[epsc/epsc[[1]],PlotRange->All,PlotRange->Full,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"norm. EPSCs"]
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnpo=ListPlot[cn,PlotRange->All,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2o=ListPlot[cn2,PlotRange->All,PlotStyle->{Black,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cepo=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lpo=Plot[line,{x,0,49},PlotRange->All,PlotStyle->Black];
+lp2o=Plot[line2,{x,0,49},PlotRange->All,PlotStyle->Black];
+lp3o=Plot[line3,{x,0,49}];
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[ep];
+Show[epn1a]
+Show[qcp1a]
+Show[cepo,lp3o];
+Show[cnpo,lpo]
+Show[cnp2o,lp2o];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+(*Print["qcont1 = ",qcont1]
+Print["qcont2 = ",qcont2]*)
+
+
+Out[515]= 
+Out[523]= 8.93333 +0.1 x
+Out[524]= 4.96296 +0.0555556 x
+Out[525]= 7.14667*10^-11+8.*10^-13 x
+Out[535]= 
+Out[536]= 
+Out[538]= 
+During evaluation of In[501]:= Real pr = 0.6
+During evaluation of In[501]:= Real N = 3.
+During evaluation of In[501]:= pr EPSC1/y-inter= 0.201493
+During evaluation of In[501]:= pr Norm EPSC1/y-inter= 0.201493
+During evaluation of In[501]:= y-inter = 8.93333
+During evaluation of In[501]:= y-inter norm= 4.96296
+During evaluation of In[501]:= slope = 0.1 x
+During evaluation of In[501]:= slope norm= 0.0555556 x
+During evaluation of In[501]:= Last EPSC ampl= 8.*10^-13
+CTx: Reduced repl. & unchnaged pr
+Basic result in comparrison to control in plots normalized to 1st amplitude:
+- slope decreases
+- y-intercept unchanged
+Recordings in elevated Ca to rise pr
+
+r=0.05;
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+r,{i,1,imax}
+]];
+
+rel=Table[
+n[i] p,{i,0,imax}
+];
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp2=ListPlot[rel,PlotRange->{0,2},PlotStyle->{Green,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs"];
+epn2=ListPlot[epsc/epsc[[1]],PlotRange->All,PlotRange->Full,PlotStyle->{Green,PointSize[0.016]},PlotLabel->"norm. EPSCs"];
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnpc=ListPlot[cn,PlotRange->All,PlotStyle->{Green,PointSize[0.016]}, PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2c=ListPlot[cn2,PlotRange->All,PlotStyle->{Green,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cep=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lpc=Plot[line,{x,0,49},PlotRange->All,PlotStyle->Green];
+lp2c=Plot[line2,{x,0,49},PlotRange->All,PlotStyle->Green];
+lp3=Plot[line3,{x,0,49}];
+
+(*Print["pr = ", (First[line]-n[1])/First[line]]*) (*No idea about this?*)
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[epn2]
+Show[qcp2]
+Show[cep,lp3];
+Show[cnpc,lpc]
+Show[cnp2c,lp2c];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+(*Print["qcont1 = ",qcont1]
+Print["qcont2 = ",qcont2]*)
+
+
+Out[628]= 2.96667 +0.05 x
+Out[629]= 1.64815 +0.0277778 x
+Out[630]= 2.37333*10^-11+4.*10^-13 x
+Out[639]= 
+Out[640]= 
+Out[642]= 
+During evaluation of In[607]:= Real pr = 0.6
+During evaluation of In[607]:= Real N = 3.
+During evaluation of In[607]:= pr EPSC1/y-inter= 0.606742
+During evaluation of In[607]:= pr Norm EPSC1/y-inter= 0.606742
+During evaluation of In[607]:= y-inter = 2.96667
+During evaluation of In[607]:= y-inter norm= 1.64815
+During evaluation of In[607]:= slope = 0.05 x
+During evaluation of In[607]:= slope norm= 0.0277778 x
+During evaluation of In[607]:= Last EPSC ampl= 4.*10^-13
+CTx: Reduced repl. & unchnaged pr with temporary overfilling
+Basic result in comparrison to control in plots normalized to 1st amplitude:
+- slope decreases
+- y-intercept unchanged
+Recordings in elevated Ca to rise pr
+
+
+r=0.05;
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+(ne-(i-1)) +r,{i,1,ne+1}
+],
+Table[
+n[i]=n[i-1] -p*n[i-1] +r,{i,ne+1,imax}
+]
+];
+
+rel=Table[
+n[i] p,{i,0,imax}
+];
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp2a=ListPlot[rel,PlotRange->{0,3},PlotStyle->{Green,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs"];
+epn2a=ListPlot[epsc/epsc[[1]],PlotRange->All,PlotRange->Full,PlotStyle->{Green,PointSize[0.016]},PlotLabel->"norm. EPSCs"];
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnpco=ListPlot[cn,PlotRange->All, PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2co=ListPlot[cn2,PlotRange->All,PlotStyle->{Green,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cep=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lpco=Plot[line,{x,0,49}];
+lp2co=Plot[line2,{x,0,49},PlotRange->All,PlotStyle->Green];
+lp3=Plot[line3,{x,0,49}];
+
+(*Print["pr = ", (First[line]-n[1])/First[line]]*) (*No idea about this?*)
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[epn2a]
+Show[qcp2a]
+Show[cep,lp3];
+Show[cnpco,lpco]
+Show[cnp2c,lp2c];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+(*Print["qcont1 = ",qcont1]
+Print["qcont2 = ",qcont2]*)
+
+
+Out[678]= 8.96667 +0.05 x
+Out[679]= 4.98148 +0.0277778 x
+Out[680]= 7.17333*10^-11+4.*10^-13 x
+Out[689]= 
+Out[690]= 
+Out[692]= 
+During evaluation of In[657]:= Real pr = 0.6
+During evaluation of In[657]:= Real N = 3.
+During evaluation of In[657]:= pr EPSC1/y-inter= 0.200743
+During evaluation of In[657]:= pr Norm EPSC1/y-inter= 0.200743
+During evaluation of In[657]:= y-inter = 8.96667
+During evaluation of In[657]:= y-inter norm= 4.98148
+During evaluation of In[657]:= slope = 0.05 x
+During evaluation of In[657]:= slope norm= 0.0277778 x
+During evaluation of In[657]:= Last EPSC ampl= 4.*10^-13
+AgTx: Strongly reduced pr & unchanged repl.
+Basic result in comparrison to control in plots normalized to 1st amplitude:
+- slope increases
+- y-intercept increases
+Recordings in elevated Ca to rise pr
+
+
+p=0.1;
+r=0.1;
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+r,{i,1,imax}
+]];
+
+rel=Table[
+n[i] p,{i,0,imax}
+];
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp3=ListPlot[rel,PlotRange->{0,2},PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs"];
+epn3=ListPlot[epsc/epsc[[1]],PlotRange->All,PlotRange->Full,PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"norm. EPSCs"]
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnpa=ListPlot[cn,PlotRange->All,PlotStyle->{Orange,PointSize[0.016]}, PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2a=ListPlot[cn2,PlotRange->All,PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cep=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lpa=Plot[line,{x,0,49},PlotStyle->Orange];
+lp2a=Plot[line2,{x,0,49},PlotStyle->Orange];
+lp3=Plot[line3,{x,0,49}];
+
+(*Print["pr = ", (First[line]-n[1])/First[line]]*) (*No idea about this?*)
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[epn3]
+Show[qcp3]
+Show[cep,lp3];
+Show[cnpa,lpa]
+Show[cnp2a,lp2a];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+
+
+Out[721]= 
+Out[729]= 2.02372 +0.101349 x
+Out[730]= 6.74573 +0.337831 x
+Out[731]= 1.61898*10^-11+8.10794*10^-13 x
+Out[740]= 
+Out[741]= 
+Out[743]= 
+During evaluation of In[707]:= Real pr = 0.1
+During evaluation of In[707]:= Real N = 3.
+During evaluation of In[707]:= pr EPSC1/y-inter= 0.148242
+During evaluation of In[707]:= pr Norm EPSC1/y-inter= 0.148242
+During evaluation of In[707]:= y-inter = 2.02372
+During evaluation of In[707]:= y-inter norm= 6.74573
+During evaluation of In[707]:= slope = 0.101349 x
+During evaluation of In[707]:= slope norm= 0.337831 x
+During evaluation of In[707]:= Last EPSC ampl= 8.1018*10^-13
+AgTx: Strongly reduced pr & unchnaged repl. with temporary overfilling
+Basic result in comparrison to control in plots normalized to 1st amplitude:
+- slope increases
+- y-intercept increases
+Recordings in elevated Ca to rise pr
+
+
+p=0.1;
+r=0.1;
+
+RRP=Join[
+{n[0]=n0},
+Table[
+n[i]=n[i-1] -p*n[i-1]+(ne-(i-1)) +r,{i,1,ne+1}
+],
+Table[
+n[i]=n[i-1] -p*n[i-1] +r,{i,ne+1,imax}
+]
+];
+
+rel=Table[
+n[i] p,{i,0,imax}
+];
+epsc=rel*q;
+
+(*Calculations for cumulative plot according to Schneggenburger & Neher*)
+cum=Accumulate[rel];
+cumepsc=Accumulate[epsc];
+cum2=cum/rel[[1]];
+tval=Table[t*isi,{t,50}];
+cumt=Transpose[{tval,cum}];
+
+(*SN plot*)
+qcp3a=ListPlot[rel,PlotRange->{0,3},PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"Quantal content = N pv"];
+cp=ListPlot[cum,PlotRange->All,PlotLabel->"CumRel = CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+rp=ListPlot[RRP,PlotRange->All,PlotLabel->"RRP"];
+ep=ListPlot[epsc,PlotRange->All,PlotLabel->"EPSCs",PlotStyle->{Orange,PointSize[0.016]}];
+epn3a=ListPlot[epsc/epsc[[1]],PlotRange->All,PlotRange->Full,PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"norm. EPSCs"];
+
+(*generating the SN fit plot*)
+xval=Table[x,{x,0,49}];
+cn=Transpose[{xval,cum}];
+cn2=Transpose[{xval,cum2}];
+ce=Transpose[{xval,cumepsc}];
+
+cnpao=ListPlot[cn,PlotRange->All,PlotStyle->{Orange,PointSize[0.016]}, PlotLabel->"CumEPSC/q: y-intercept < N;  EPSC1/y-intercept > pr"];
+cnp2ao=ListPlot[cn2,PlotRange->All,PlotStyle->{Orange,PointSize[0.016]},PlotLabel->"CumEPSC/EPSC1: y-intercept < N;  EPSC1/y-intercept > pr"];
+cep=ListPlot[ce,PlotRange->All,PlotLabel->"Cum EPSCs"];
+
+line = Fit[Take[cn,-5], {1,x},x]
+line2 = Fit[Take[cn2,-5], {1,x},x]
+line3 = Fit[Take[ce,-5], {1,x},x]
+
+lpao=Plot[line,{x,0,49},PlotStyle->Orange];
+lp2ao=Plot[line2,{x,0,49},PlotStyle->Orange];
+lp3=Plot[line3,{x,0,49}];
+
+(*Print["pr = ", (First[line]-n[1])/First[line]]*) (*No idea about this?*)
+
+p1= cum[[1]]/First[line];
+p2=cum2[[1]]/First[line2];
+qcont1=p1 First[line];
+qcont2=p2 First[line2];
+
+Show[rp];
+Show[epn3a]
+Show[qcp3a]
+Show[cep,lp3];
+Show[cnpao,lpao]
+Show[cnp2ao,lp2ao];
+
+
+Print["Real pr = ", p]
+Print["Real N = ", n0]
+Print["pr EPSC1/y-inter= ",p1]
+Print["pr Norm EPSC1/y-inter= ", p2]
+Print["y-inter = ",line[[1]]]
+Print["y-inter norm= ",line2[[1]]]
+Print["slope = ",line[[2]]]
+Print["slope norm= ",line2[[2]]]
+Print["Last EPSC ampl= ",epsc[[49]]]
+(*Print["qcont1 = ",qcont1]
+Print["qcont2 = ",qcont2]*)
+
+
+Out[776]= 7.7501 +0.106189 x
+Out[777]= 25.8337 +0.353963 x
+Out[778]= 6.20008*10^-11+8.49512*10^-13 x
+Out[787]= 
+Out[788]= 
+Out[790]= 
+During evaluation of In[754]:= Real pr = 0.1
+During evaluation of In[754]:= Real N = 3.
+During evaluation of In[754]:= pr EPSC1/y-inter= 0.0387092
+During evaluation of In[754]:= pr Norm EPSC1/y-inter= 0.0387092
+During evaluation of In[754]:= y-inter = 7.7501
+During evaluation of In[754]:= y-inter norm= 25.8337
+During evaluation of In[754]:= slope = 0.106189 x
+During evaluation of In[754]:= slope norm= 0.353963 x
+During evaluation of In[754]:= Last EPSC ampl= 8.46698*10^-13
+Comparing w/o overfilling
+In[801]:= Show[qcp1,qcp3]
+Show[cnp,lp,cnpa,lpa,PlotLabel->"AgaTx (orange) vs Ctrl (black)"(*,AxesLabel->{"Stim #","Cum qunatal content"}*)]
+
+Show[qcp1,qcp2]
+Show[cnp,lp,cnpc,lpc,PlotLabel->"CTx (green) vs Ctrl (black)"(*,AxesLabel->{"Stim #","Cum qunatal content"}*)]
+Out[801]= 
+Out[802]= 
+Out[803]= 
+Out[804]= 
+Comparing with overfilling
+In[805]:= Show[qcp1a,qcp3a]
+Show[cnpo,lpo,cnpao,lpao,PlotLabel->"AgaTx (orange) vs Ctrl(black)"(*,AxesLabel->{"Stim #","Cum quantal content"}*)]
+
+Show[qcp1a,qcp2a]
+Show[cnp2o,lp2o,cnp2co,lp2co,PlotLabel->"CTx (green) vs Ctrl"(*,AxesLabel->{"Stim #","Quantal content"}*)]
+Out[805]= 
+Out[806]= 
+Out[807]= 
+Out[808]= 
